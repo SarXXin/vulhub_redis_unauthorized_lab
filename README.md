@@ -9,7 +9,7 @@
 - 下载并使用 Vulhub 漏洞环境；
 - 使用 Docker Compose 启动 Redis 未授权访问漏洞环境；
 - 查看 Redis 容器运行状态与端口映射；
-- 使用 redis-cli 连接 Redis 服务；
+- 使用容器内置 redis-cli 连接 Redis 服务；
 - 验证无需密码即可访问 Redis；
 - 执行 PING、INFO、DBSIZE、SET、GET 等安全测试命令；
 - 分析 Redis 未授权访问漏洞成因；
@@ -207,22 +207,28 @@ PONG
 docker ps
 ```
 
+本实验中 Redis 容器名称为：
+
+```text
+4-unacc-redis-1
+```
+
+因此执行：
+
+```bash
+docker exec -it 4-unacc-redis-1 redis-cli
+```
+
+进入 Redis 命令行后，提示符会变成类似：
+
+```text
+127.0.0.1:6379>
+```
+
 然后执行：
 
 ```bash
-docker exec -it 容器名 redis-cli
-```
-
-示例：
-
-```bash
-docker exec -it redis-4-unacc-redis-1 redis-cli
-```
-
-进入 Redis 命令行后执行：
-
-```bash
-PING
+ping
 ```
 
 如果返回：
@@ -243,8 +249,10 @@ PONG
 
 ### 1. PING 测试
 
+在 Redis 命令行中执行：
+
 ```bash
-PING
+ping
 ```
 
 预期返回：
@@ -426,6 +434,7 @@ docker compose down -v
 - Docker Compose 启动真实漏洞环境的方法；
 - Redis 默认端口和基本连接方式；
 - redis-cli 的基础使用；
+- Docker 容器内 redis-cli 的使用方式；
 - Redis 未授权访问的验证方法；
 - PING、INFO、DBSIZE、SET、GET 等基础命令；
 - Redis 未授权访问漏洞的成因；
