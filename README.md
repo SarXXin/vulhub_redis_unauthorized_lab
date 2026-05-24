@@ -6,15 +6,15 @@
 
 本项目主要完成：
 
-- 下载并使用 Vulhub 漏洞环境
-- 启动 Redis 未授权访问漏洞环境
-- 使用 Docker Compose 管理漏洞容器
-- 使用 redis-cli 连接 Redis 服务
-- 验证无需密码即可访问 Redis
-- 执行 PING、INFO、DBSIZE、SET、GET 等安全测试命令
-- 分析 Redis 未授权访问漏洞成因
-- 总结 Redis 安全加固建议
-- 整理 Payload、漏洞报告和实验截图
+- 下载并使用 Vulhub 漏洞环境；
+- 使用 Docker Compose 启动 Redis 未授权访问漏洞环境；
+- 查看 Redis 容器运行状态与端口映射；
+- 使用 redis-cli 连接 Redis 服务；
+- 验证无需密码即可访问 Redis；
+- 执行 PING、INFO、DBSIZE、SET、GET 等安全测试命令；
+- 分析 Redis 未授权访问漏洞成因；
+- 总结 Redis 安全加固建议；
+- 整理实验截图、命令记录和漏洞复现报告。
 
 ---
 
@@ -40,7 +40,7 @@
 | 漏洞服务 | Redis |
 | 默认端口 | 6379 |
 | 测试工具 | redis-cli |
-| 测试类型 | 未授权访问 |
+| 漏洞类型 | 未授权访问 |
 
 ---
 
@@ -55,7 +55,6 @@ vulhub_redis_unauthorized_lab/
 ├── reports/
 │   └── redis_unauthorized_report.md
 └── screenshots/
-    ├── vulhub_redis_directory.png
     ├── docker_redis_running.png
     ├── redis_unauthorized_ping.png
     ├── redis_info_success.png
@@ -64,16 +63,22 @@ vulhub_redis_unauthorized_lab/
 
 ---
 
-## 一、什么是 Vulhub
+## 一、Vulhub 简介
 
-Vulhub 是一个基于 Docker 的漏洞复现环境集合，里面包含 Redis、Tomcat、Fastjson、Log4j2、Spring、ThinkPHP 等多种真实漏洞环境。
+Vulhub 是一个基于 Docker 的漏洞复现环境集合，包含 Redis、Tomcat、Fastjson、Log4j2、Spring、ThinkPHP 等多种真实漏洞环境。
 
-相比 DVWA，Vulhub 更接近真实漏洞复现。  
-DVWA 更适合学习 Web 基础漏洞，Vulhub 更适合学习真实服务漏洞和 CVE 复现。
+相比 DVWA，Vulhub 更接近真实漏洞复现：
+
+```text
+DVWA：适合学习 Web 基础漏洞
+Vulhub：适合复现真实服务漏洞和 CVE 漏洞
+```
+
+本项目选择 Redis 未授权访问漏洞作为 Vulhub 真实漏洞复现的入门项目。
 
 ---
 
-## 二、什么是 Redis 未授权访问
+## 二、Redis 未授权访问漏洞简介
 
 Redis 是一种常见的内存数据库，默认端口通常为：
 
@@ -87,14 +92,15 @@ Redis 未授权访问漏洞指的是：
 Redis 服务暴露在网络中，并且没有设置认证或访问控制，导致攻击者无需密码即可连接 Redis 服务。
 ```
 
-如果 Redis 未设置密码、监听外部地址，并且防火墙没有限制访问，就可能被未授权连接。
+如果 Redis 未设置密码、监听地址配置不安全，并且防火墙没有限制访问来源，就可能导致未授权访问风险。
 
 本实验只进行安全验证，包括：
 
-- 连接 Redis
-- 执行 PING
-- 查看基础信息
-- 写入和读取测试数据
+- 连接 Redis；
+- 执行 PING；
+- 查看 Redis 基础信息；
+- 写入测试数据；
+- 读取测试数据。
 
 不进行破坏性操作。
 
@@ -111,7 +117,7 @@ cd /d E:\
 git clone --depth 1 https://github.com/vulhub/vulhub.git
 ```
 
-下载完成后，会生成：
+下载完成后，会生成目录：
 
 ```text
 E:\vulhub
@@ -121,7 +127,7 @@ E:\vulhub
 
 ## 四、进入 Redis 漏洞目录
 
-进入 Redis 未授权访问环境目录：
+进入 Redis 未授权访问漏洞目录：
 
 ```bash
 cd /d E:\vulhub\redis\4-unacc
@@ -133,29 +139,25 @@ cd /d E:\vulhub\redis\4-unacc
 dir E:\vulhub\redis
 ```
 
-根据实际目录名进入对应的 Redis 未授权访问环境。
-
-实验截图：
-
-![Vulhub Redis Directory](screenshots/vulhub_redis_directory.png)
+然后根据实际目录名称进入对应漏洞环境。
 
 ---
 
-## 五、启动漏洞环境
+## 五、启动 Redis 漏洞环境
 
-在漏洞目录下执行：
+在 Redis 未授权访问目录下执行：
 
 ```bash
 docker compose up -d
 ```
 
-启动完成后查看容器状态：
+启动完成后，查看容器状态：
 
 ```bash
 docker ps
 ```
 
-如果 Redis 容器正常运行，并且端口映射类似：
+如果看到 Redis 容器正在运行，并且端口映射类似：
 
 ```text
 0.0.0.0:6379->6379/tcp
@@ -173,7 +175,7 @@ docker ps
 
 ### 方法一：本机安装了 redis-cli
 
-如果 Windows 本机已经安装 redis-cli，可以直接执行：
+如果 Windows 本机已经安装 redis-cli，可以执行：
 
 ```bash
 redis-cli -h 127.0.0.1 -p 6379
@@ -195,9 +197,9 @@ PONG
 
 ---
 
-### 方法二：进入 Docker 容器执行 redis-cli
+### 方法二：使用容器内 redis-cli
 
-如果本机没有 redis-cli，可以使用容器内的 redis-cli。
+如果本机没有 redis-cli，可以直接使用 Redis 容器内置的 redis-cli。
 
 先查看容器名称：
 
@@ -211,13 +213,13 @@ docker ps
 docker exec -it 容器名 redis-cli
 ```
 
-例如：
+示例：
 
 ```bash
 docker exec -it redis-4-unacc-redis-1 redis-cli
 ```
 
-进入后输入：
+进入 Redis 命令行后执行：
 
 ```bash
 PING
@@ -245,23 +247,27 @@ PONG
 PING
 ```
 
-返回：
+预期返回：
 
 ```text
 PONG
 ```
 
-说明 Redis 服务可连接。
+说明 Redis 服务可以正常连接。
+
+如果没有要求输入密码，说明 Redis 存在未授权访问风险。
 
 ---
 
 ### 2. 查看 Redis 信息
 
+执行：
+
 ```bash
 INFO
 ```
 
-如果无需输入密码即可查看 Redis 版本、系统信息、连接信息等，说明 Redis 存在未授权访问风险。
+如果无需认证即可查看 Redis 版本、系统信息、连接信息等内容，说明 Redis 存在信息泄露风险。
 
 实验截图：
 
@@ -271,21 +277,25 @@ INFO
 
 ### 3. 查看数据库 Key 数量
 
+执行：
+
 ```bash
 DBSIZE
 ```
 
-返回类似：
+可能返回：
 
 ```text
 (integer) 0
 ```
 
-说明可以直接查看数据库状态。
+该命令用于查看当前 Redis 数据库中的 Key 数量。
 
 ---
 
 ### 4. 写入测试数据
+
+执行：
 
 ```bash
 SET testkey hello_vulhub
@@ -303,6 +313,8 @@ OK
 
 ### 5. 读取测试数据
 
+执行：
+
 ```bash
 GET testkey
 ```
@@ -313,7 +325,7 @@ GET testkey
 "hello_vulhub"
 ```
 
-说明可以读取刚刚写入的数据。
+说明可以读取 Redis 中的数据。
 
 实验截图：
 
@@ -321,61 +333,86 @@ GET testkey
 
 ---
 
-## 八、漏洞成因分析
+## 八、实验结果分析
+
+通过本实验可以确认：
+
+```text
+Redis 服务无需认证即可连接；
+Redis 支持未授权执行 PING；
+Redis 支持未授权执行 INFO；
+Redis 支持未授权执行 SET；
+Redis 支持未授权执行 GET。
+```
+
+这说明当前 Redis 环境存在未授权访问风险。
+
+本实验只使用安全测试命令验证漏洞存在，没有执行破坏性操作。
+
+---
+
+## 九、漏洞成因分析
 
 Redis 未授权访问通常由以下原因造成：
 
 1. Redis 未设置访问密码；
 2. Redis 监听地址配置不安全；
-3. Redis 服务端口暴露到外部网络；
+3. Redis 服务端口 6379 暴露到外部网络；
 4. 防火墙或安全组没有限制访问来源；
-5. 业务上线时忽略了 Redis 安全配置；
-6. 内部服务被错误暴露到公网。
+5. Docker 容器部署时错误映射端口；
+6. 运维人员忽略 Redis 默认安全配置。
 
 正常情况下，Redis 不应该允许任意客户端直接连接并执行命令。
 
 ---
 
-## 九、漏洞危害
+## 十、漏洞危害
 
 Redis 未授权访问可能造成：
 
-- 敏感缓存数据泄露；
+- Redis 中缓存数据泄露；
 - Redis 中业务数据被读取；
-- Redis 数据被篡改；
+- Redis 中数据被恶意修改；
 - Redis 数据被删除；
-- 服务可用性受到影响；
-- 在错误配置情况下可能造成进一步入侵风险。
+- 服务稳定性受到影响；
+- 敏感配置或业务状态泄露；
+- 在错误配置情况下可能进一步扩大攻击面。
 
-本实验只验证基础连接和数据读写，不进行破坏性测试。
+在真实环境中，Redis 未授权访问属于高风险配置问题。
 
 ---
 
-## 十、防御建议
+## 十一、防御建议
 
 为了防止 Redis 未授权访问，应采取以下措施：
 
-1. 配置 Redis 认证密码；
-2. 不将 Redis 暴露到公网；
+1. 设置 Redis 访问密码；
+2. 不将 Redis 服务暴露到公网；
 3. 使用防火墙或安全组限制访问来源；
 4. 将 Redis 绑定到本地地址或内网地址；
-5. 禁止危险命令或重命名危险命令；
-6. 使用最小权限原则部署服务；
-7. 定期检查开放端口；
-8. 对 Redis 访问日志进行监控；
-9. 容器环境中避免不必要的端口映射。
+5. 容器部署时避免不必要的端口映射；
+6. 禁用或重命名高风险命令；
+7. 使用最小权限原则运行 Redis；
+8. 定期检查开放端口；
+9. 对 Redis 访问日志进行监控。
 
 ---
 
-## 十一、停止实验环境
+## 十二、停止实验环境
 
-实验结束后，在漏洞目录下执行：
+实验结束后，回到 Redis 漏洞目录：
+
+```bash
+cd /d E:\vulhub\redis\4-unacc
+```
+
+执行：
 
 ```bash
 docker compose down -v
 ```
 
-该命令会停止并清理容器和相关数据卷。
+该命令会停止 Redis 漏洞容器并清理相关数据卷。
 
 ---
 
@@ -394,7 +431,7 @@ docker compose down -v
 - Redis 未授权访问漏洞的成因；
 - Redis 服务的安全加固方式。
 
-本实验是从 DVWA 基础漏洞复现过渡到真实漏洞复现的重要一步。
+本实验是从 DVWA 基础漏洞复现过渡到 Vulhub 真实漏洞复现的重要一步。
 
 ---
 
